@@ -788,7 +788,9 @@ async def timetable_proceed_my_group_custom(message: types.Message, state: FSMCo
     timetable = (await psg.send_timetable(custom=True, chat_id=message.chat.id) if message.text == 'Личное' else
                  await psg.send_timetable(my_group=True, chat_id=message.chat.id))
     if timetable[0]:  # если расписание было найдено
+        print(bytes(timetable[1][0]))
         if bytes(timetable[1][0]) == b'DEFAULT':
+            print(bytes(timetable[1][0]))
             await bot.send_message(  # отправляем расписание
                 message.chat.id,
                 'В этом семестре нет официального расписания для твоей группы( '
