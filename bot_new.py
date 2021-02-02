@@ -788,15 +788,7 @@ async def timetable_proceed_my_group_custom(message: types.Message, state: FSMCo
     timetable = (await psg.send_timetable(custom=True, chat_id=message.chat.id) if message.text == 'Личное' else
                  await psg.send_timetable(my_group=True, chat_id=message.chat.id))
     if timetable[0]:  # если расписание было найдено
-        if bytes(timetable[1][0]) == b'DEFAULT':
-            await bot.send_message(  # отправляем расписание
-                message.chat.id,
-                'В этом семестре нет официального расписания для твоей группы( '
-                'Пожалуйста, измени номер своей группы в /profile 😉',
-                reply_markup=today_tomorrow_keyboard()
-            )
-            await state.finish()
-        elif timetable[1][0] is not None and bytes(timetable[1][0]) != b'DEFAULT':
+        if timetable[1][0] is not None and bytes(timetable[1][0]) != b'DEFAULT':
             await Timetable.weekday.set()  # изменяем состояние на Timetable.weekday
             async with state.proxy() as data:
                 data['schedule'] = pickle.loads(timetable[1][0])  # записываем расписание
@@ -812,6 +804,14 @@ async def timetable_proceed_my_group_custom(message: types.Message, state: FSMCo
                 'Расписание на какой день недели ты хочешь узнать?',
                 reply_markup=keyboard
             )
+        elif timetable[1][0] is not None and bytes(timetable[1][0]) == b'DEFAULT':
+            await bot.send_message(  # отправляем расписание
+                message.chat.id,
+                'В этом семестре нет официального расписания для твоей группы( '
+                'Пожалуйста, измени номер своей группы в /profile 😉',
+                reply_markup=today_tomorrow_keyboard()
+            )
+            await state.finish()
         else:
             await bot.send_message(
                 message.chat.id,
