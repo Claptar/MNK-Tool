@@ -149,7 +149,6 @@ async def send_today_tomorrow_schedule(message):
     # список дней для удобной конвертации номеров дней недели (0, 1, ..., 6) в их названия
     week = tuple(['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'])
     # today - какой сегодня день недели (от 0 до 6)
-    print(datetime.now(tz=timezone('Europe/Moscow')))
     today = datetime.now(tz=timezone('Europe/Moscow')).weekday()
     tomorrow = today + 1 if today in range(6) else 0  # номер дня для завтра, если это воскресенье (6), то 0
     day = today if message.text == 'На сегодня' else tomorrow  # выбор дня в зависимости от запроса
