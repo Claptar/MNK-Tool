@@ -15,7 +15,7 @@ from activity import stat
 from math_module import math_part
 from koryavov import kor
 from data_constructor import psg
-import datetime
+from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.INFO)
 
@@ -147,7 +147,9 @@ async def send_today_tomorrow_schedule(message):
     await psg.insert_action('to/yes', message.chat.id)
     # список дней для удобной конвертации номеров дней недели (0, 1, ..., 6) в их названия
     week = tuple(['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'])
-    today = datetime.datetime.today().weekday()  # today - какой сегодня день недели (от 0 до 6)
+    # today - какой сегодня день недели (от 0 до 6)
+    print(datetime.today().replace(tzinfo=timezone.utc).astimezone(tz=None))
+    today = datetime.today().replace(tzinfo=timezone.utc).astimezone(tz=None).weekday()
     tomorrow = today + 1 if today in range(6) else 0  # номер дня для завтра, если это воскресенье (6), то 0
     day = today if message.text == 'На сегодня' else tomorrow  # выбор дня в зависимости от запроса
     custom_timetable = await psg.send_timetable(custom=True, chat_id=message.chat.id)
