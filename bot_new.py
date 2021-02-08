@@ -733,21 +733,30 @@ async def timetable_proceed_another_group(message: types.Message, state: FSMCont
     timetable = await psg.send_timetable(another_group=message.text)
     await bot.send_chat_action(message.chat.id, 'typing')  # Отображение "typing"
     if timetable[0]:
-        await Timetable.weekday.set()  # изменяем состояние на Timetable.weekday
-        async with state.proxy() as data:
-            data['schedule'] = pickle.loads(timetable[1][0])  # записываем расписание
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        # дни недели для тыков и кнопка для выхода (строки выбраны по размеру слов)
-        keyboard.add(*[types.KeyboardButton(name) for name in ['На неделю']])
-        keyboard.add(*[types.KeyboardButton(name) for name in ['Понедельник', 'Вторник']])
-        keyboard.add(*[types.KeyboardButton(name) for name in ['Среда', 'Четверг']])
-        keyboard.add(*[types.KeyboardButton(name) for name in ['Пятница', 'Суббота']])
-        keyboard.add(*[types.KeyboardButton(name) for name in ['Воскресенье', 'Выход']])
-        await bot.send_message(
-            message.chat.id,
-            'Расписание на какой день недели ты хочешь узнать?',
-            reply_markup=keyboard
-        )
+        if timetable[1][0] is not None and bytes(timetable[1][0]) != b'DEFAULT':
+            await Timetable.weekday.set()  # изменяем состояние на Timetable.weekday
+            async with state.proxy() as data:
+                data['schedule'] = pickle.loads(timetable[1][0])  # записываем расписание
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            # дни недели для тыков и кнопка для выхода (строки выбраны по размеру слов)
+            keyboard.add(*[types.KeyboardButton(name) for name in ['На неделю']])
+            keyboard.add(*[types.KeyboardButton(name) for name in ['Понедельник', 'Вторник']])
+            keyboard.add(*[types.KeyboardButton(name) for name in ['Среда', 'Четверг']])
+            keyboard.add(*[types.KeyboardButton(name) for name in ['Пятница', 'Суббота']])
+            keyboard.add(*[types.KeyboardButton(name) for name in ['Воскресенье', 'Выход']])
+            await bot.send_message(
+                message.chat.id,
+                'Расписание на какой день недели ты хочешь узнать?',
+                reply_markup=keyboard
+            )
+        elif timetable[1][0] is not None and bytes(timetable[1][0]) == b'DEFAULT':
+            await bot.send_message(  # отправляем расписание
+                message.chat.id,
+                'В этом семестре нет официального расписания для твоей группы( '
+                'Пожалуйста, измени номер своей группы в /profile 😉',
+                reply_markup=today_tomorrow_keyboard()
+            )
+            await state.finish()
     # номера группы нет в базе / произошла какая-то ошибка, связанная с соединением
     elif not timetable[0] and timetable[1] == 'connection_error':
         await bot.send_message(
